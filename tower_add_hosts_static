@@ -1,0 +1,93 @@
+#!/usr/bin/python
+
+# maybe replace with subprocess
+import os
+
+def tower_sys(argue):
+    try:
+        tower_out = os.system(argue)
+        if (tower_out != 0):
+            raise ValueError(tower_out)
+    except ValueError:
+        print "Command returned", tower_out
+
+def tower_capt(argue):
+    try:
+        tower_capt = os.popen(argue)
+        print tower_capt.read()
+        return tower_capt
+    except ValueError:
+        print "error"
+
+def isItInt(s):
+    try:
+        int(s)
+        return True
+    except (NameError, ValueError):
+        return False
+
+def answer(prompt):
+   answer = raw_input(prompt)
+   yes = ['Y', 'y']
+   no  = ['N', 'n']
+   if answer in yes:
+       return True
+   elif answer in no:
+       print "You selected No, Exiting"
+       quit()
+   else:
+       print "Incorrect Input, Exiting"
+       quit()
+
+# Check if tower installed
+tower_sys("pip install ansible-tower-cli --quiet")
+
+# Online Usage
+
+print "====================================================================================="
+print " This program reads host files from ./inventory/<filename>.  (i.e. dcaUnixAzureHosts)"
+print " Host entries should be in FQDN form"
+print " The filename will also be used as the inventory name, so name it as appropriate"
+print " The filename(s) should not have any extensions"
+print " Once you answer Y, you will be prompted to choose the Organization name to add to "
+print "====================================================================================="
+
+prompt = " Continue? Yy/Nn: "
+answer = answer(prompt)
+if (answer) == False:
+   print "Exiting"
+   quit()
+
+# Get tower inventory
+tower_capt("tower-cli organization list")
+
+# Set the organization name
+orgnum = raw_input("Select the ID of the Organization to use: ")
+if not isItInt(orgnum):
+    print "I need an number,exiting"
+    quit()
+
+# Get directory listing under inventory extensions of .dat
+file_list = []
+for file in os.listdir("inventory"):
+    file_list.append(file)
+
+print "Found inventory for", file_list
+
+# Create the inventory in tower
+#print "tower-cli inventory create --organization=%d" % int(orgnum)
+for orgname in  file_list:
+    #print "Creating inventory: ",orgname
+    #orgarg = "tower-cli inventory create --organization=%d" % int(orgnum)
+    orgarg = "tower-cli inventory create --name=" + orgname + " --organization=" + orgnum
+    print orgarg
+    tower_sys(orgarg)
+
+    #start reading inventory using list comprehension
+    with open('inventory/%s' % orgname, 'r' ) as f:
+        content = [word.strip() for word in f]
+    #loop over the list and start adding
+    #hostarg = "tower-cli host create --name=" + content + " --inventory=" + orgnum
+    for x in content:
+         hostarg = "tower-cli host create --name=" + x + " --inventory=" + orgname
+         tower_sys(hostarg)

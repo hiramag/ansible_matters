@@ -11,11 +11,11 @@ def tower_sys(argue):
     except ValueError:
         print "Command returned", tower_out
 
-def tower_capt(argue):
+def tower_popen(argue):
     try:
-        tower_capt = os.popen(argue)
-        print tower_capt.read()
-        return tower_capt
+        tower_popen = os.popen(argue)
+        print tower_popen.read()
+        return tower_popen
     except ValueError:
         print "error"
 
@@ -59,12 +59,12 @@ if (answer) == False:
    quit()
 
 # Get tower inventory
-tower_capt("tower-cli organization list")
+tower_popen("tower-cli organization list")
 
 # Set the organization name
 orgnum = raw_input("Select the ID of the Organization to use: ")
 if not isItInt(orgnum):
-    print "I need an number,exiting"
+    print "I need a number,exiting"
     quit()
 
 # Get directory listing under inventory extensions of .dat
@@ -75,10 +75,7 @@ for file in os.listdir("inventory"):
 print "Found inventory for", file_list
 
 # Create the inventory in tower
-#print "tower-cli inventory create --organization=%d" % int(orgnum)
 for orgname in  file_list:
-    #print "Creating inventory: ",orgname
-    #orgarg = "tower-cli inventory create --organization=%d" % int(orgnum)
     orgarg = "tower-cli inventory create --name=" + orgname + " --organization=" + orgnum
     print orgarg
     tower_sys(orgarg)
@@ -87,7 +84,6 @@ for orgname in  file_list:
     with open('inventory/%s' % orgname, 'r' ) as f:
         content = [word.strip() for word in f]
     #loop over the list and start adding
-    #hostarg = "tower-cli host create --name=" + content + " --inventory=" + orgnum
     for x in content:
          hostarg = "tower-cli host create --name=" + x + " --inventory=" + orgname
          tower_sys(hostarg)
